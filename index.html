@@ -136,6 +136,22 @@
       box-shadow: 0 0 0 5px rgba(255, 146, 43, 0.2);
     }
 
+    button {
+      padding: 14px 20px;
+      border: none;
+      border-radius: 16px;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: white;
+      background: #4caf50;
+      box-shadow: 0 5px 0 #2f7d32;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    button:hover { transform: translateY(-2px); }
+    button:active { transform: translateY(3px) scale(0.98); box-shadow: 0 2px 0 #2f7d32; }
+
     #msg {
       min-height: 42px;
       margin-top: 16px;
@@ -181,10 +197,11 @@
     <section class="question-card" aria-live="polite">
       <h2 id="q"></h2>
       <div id="grid" class="grid"></div>
-      <div class="answer-row">
+      <form id="answerForm" class="answer-row">
         <label for="answer">Type your answer:</label>
         <input id="answer" name="answer" type="number" inputmode="numeric" pattern="[0-9]*" min="0" autocomplete="off" aria-describedby="msg">
-      </div>
+        <button type="submit">Check ✅</button>
+      </form>
       <div id="msg"></div>
     </section>
   </main>
@@ -200,7 +217,6 @@
     let firstNumber = 4;
     let secondNumber = 4;
     let answer = 8;
-    let isAdvancing = false;
 
     const icons = ["🍎", "⭐", "🐥", "🧸", "🚗", "🍓", "🌈", "⚽"];
 
@@ -262,7 +278,6 @@
 
       const input = document.getElementById("answer");
       input.value = "";
-      isAdvancing = false;
       input.focus();
     }
 
@@ -278,29 +293,20 @@
       msg.className = className;
     }
 
-    function checkAnswer() {
-      if (isAdvancing) {
-        return;
-      }
+    function checkAnswer(event) {
+      event.preventDefault();
+      play("clickSound");
 
       const input = document.getElementById("answer");
-      const typed = input.value.trim();
+      const value = Number(input.value.trim());
 
-      if (typed === "") {
-        showMessage("", "");
-        return;
-      }
-
-      const value = Number(typed);
-
-      if (!Number.isInteger(value)) {
+      if (input.value.trim() === "" || !Number.isInteger(value)) {
         showMessage("⌨️ Please type a whole number.", "wrong");
         input.focus();
         return;
       }
 
       if (value === answer) {
-        isAdvancing = true;
         right++;
         level = Math.floor(right / 5) + 1;
         updateScore();
@@ -311,13 +317,7 @@
           showMessage("", "");
           nextQuestion();
         }, 900);
-        return;
-      }
-
-      const answerDigits = String(answer).length;
-      const hasTypedEnoughDigits = typed.length >= answerDigits;
-
-      if (hasTypedEnoughDigits) {
+      } else {
         wrong++;
         updateScore();
         showMessage("❌ Try again! Count the pictures.", "wrong");
@@ -326,7 +326,7 @@
       }
     }
 
-    document.getElementById("answer").addEventListener("input", checkAnswer);
+    document.getElementById("answerForm").addEventListener("submit", checkAnswer);
     updateScore();
     nextQuestion();
   </script>
